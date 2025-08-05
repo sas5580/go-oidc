@@ -125,6 +125,7 @@ func TestNewProvider(t *testing.T) {
 		wantDeviceAuthURL string
 		wantUserInfoURL   string
 		wantIssuerURL     string
+		wantEndSessionURL string
 		wantAlgorithms    []string
 		wantErr           bool
 	}{
@@ -135,11 +136,13 @@ func TestNewProvider(t *testing.T) {
 				"authorization_endpoint": "https://example.com/auth",
 				"token_endpoint": "https://example.com/token",
 				"jwks_uri": "https://example.com/keys",
-				"id_token_signing_alg_values_supported": ["RS256"]
+				"id_token_signing_alg_values_supported": ["RS256"],
+				"end_session_endpoint": "https://example.com/logout"
 			}`,
-			wantAuthURL:    "https://example.com/auth",
-			wantTokenURL:   "https://example.com/token",
-			wantAlgorithms: []string{"RS256"},
+			wantAuthURL:       "https://example.com/auth",
+			wantTokenURL:      "https://example.com/token",
+			wantEndSessionURL: "https://example.com/logout",
+			wantAlgorithms:    []string{"RS256"},
 		},
 		{
 			name: "additional_algorithms",
@@ -335,6 +338,10 @@ func TestNewProvider(t *testing.T) {
 			if p.userInfoURL != test.wantUserInfoURL {
 				t.Errorf("NewProvider() unexpected userInfoURL value, got=%s, want=%s",
 					p.userInfoURL, test.wantUserInfoURL)
+			}
+			if p.endSessionURL != test.wantEndSessionURL {
+				t.Errorf("NewProvider() unexpected wantEndSessionURL value, got=%s, want=%s",
+					p.endSessionURL, test.wantEndSessionURL)
 			}
 			if !reflect.DeepEqual(p.algorithms, test.wantAlgorithms) {
 				t.Errorf("NewProvider() unexpected algorithms value, got=%s, want=%s",

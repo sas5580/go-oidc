@@ -100,6 +100,7 @@ type Provider struct {
 	deviceAuthURL string
 	userInfoURL   string
 	jwksURL       string
+	endSessionURL string
 	algorithms    []string
 
 	// Raw claims returned by the server.
@@ -136,6 +137,7 @@ type providerJSON struct {
 	JWKSURL       string   `json:"jwks_uri"`
 	UserInfoURL   string   `json:"userinfo_endpoint"`
 	Algorithms    []string `json:"id_token_signing_alg_values_supported"`
+	EndSessionURL string   `json:"end_session_endpoint"`
 }
 
 // supportedAlgorithms is a list of algorithms explicitly supported by this
@@ -162,7 +164,7 @@ var supportedAlgorithms = map[string]bool{
 // parsing.
 //
 //	// Directly fetch the metadata document.
-// 	resp, err := http.Get("https://login.example.com/custom-metadata-path")
+//	resp, err := http.Get("https://login.example.com/custom-metadata-path")
 //	if err != nil {
 //		// ...
 //	}
@@ -201,6 +203,9 @@ type ProviderConfig struct {
 	// verify issued ID tokens. This endpoint is polled as new keys are made
 	// available.
 	JWKSURL string `json:"jwks_uri"`
+	// EndSessionURL is the endpoint used by thr provider to support the Open ID Connect
+	// RP-Initiated logout endpoint. See https://openid.net/specs/openid-connect-rpinitiated-1_0.html.
+	EndSessionURL string `json:"end_session_endpoint"`
 
 	// Algorithms, if provided, indicate a list of JWT algorithms allowed to sign
 	// ID tokens. If not provided, this defaults to the algorithms advertised by
@@ -221,6 +226,7 @@ func (p *ProviderConfig) NewProvider(ctx context.Context) *Provider {
 		deviceAuthURL: p.DeviceAuthURL,
 		userInfoURL:   p.UserInfoURL,
 		jwksURL:       p.JWKSURL,
+		endSessionURL: p.EndSessionURL,
 		algorithms:    p.Algorithms,
 		client:        getClient(ctx),
 	}
@@ -282,6 +288,7 @@ func NewProvider(ctx context.Context, issuer string) (*Provider, error) {
 		deviceAuthURL: p.DeviceAuthURL,
 		userInfoURL:   p.UserInfoURL,
 		jwksURL:       p.JWKSURL,
+		endSessionURL: p.EndSessionURL,
 		algorithms:    algs,
 		rawClaims:     body,
 		client:        getClient(ctx),
@@ -398,6 +405,11 @@ func (p *Provider) UserInfo(ctx context.Context, tokenSource oauth2.TokenSource)
 		EmailVerified: bool(userInfo.EmailVerified),
 		claims:        body,
 	}, nil
+}
+
+// EndSessionEndpoint returns the OpenID Connect RP-initiated logout endpoint for the given provider.
+func (p *Provider) EndSessionEndpoint() string {
+	return p.endSessionURL
 }
 
 // IDToken is an OpenID Connect extension that provides a predictable representation
