@@ -1,4 +1,5 @@
 // Package oidc implements OpenID Connect client logic for the golang.org/x/oauth2 package.
+// This file has been modified by Yext to support the Open ID Connect RP-Initiated logout endpoint.
 package oidc
 
 import (

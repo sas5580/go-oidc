@@ -1,3 +1,4 @@
+// This file has been modified by Yext to support the Open ID Connect RP-Initiated logout endpoint.
 package oidc
 
 import (
